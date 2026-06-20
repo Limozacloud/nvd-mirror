@@ -1,0 +1,3 @@
+_tmp/
+*.gz
+__pycache__/
