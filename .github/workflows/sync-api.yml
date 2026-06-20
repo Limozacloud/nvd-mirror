@@ -28,7 +28,7 @@ jobs:
           docker run --rm \
             -v "${{ github.workspace }}:/repo" \
             ghcr.io/limozacloud/nvd-sync:latest \
-            api_update.py --hours 5 \
+            api_update.py --hours 24 \
                           --data /repo/data --state /repo/_state.csv
 
       - name: Commit changes
