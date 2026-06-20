@@ -1,4 +1,4 @@
-name: NVD delta sync
+name: NVD API sync (4h)
 
 on:
   schedule:
@@ -23,19 +23,13 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Download feeds
-        run: |
-          mkdir -p _tmp
-          curl -fsSL https://nvd.nist.gov/feeds/json/cve/2.0/nvdcve-2.0-modified.json.gz -o _tmp/modified.json.gz
-          curl -fsSL https://nvd.nist.gov/feeds/json/cve/2.0/nvdcve-2.0-recent.json.gz   -o _tmp/recent.json.gz
-
-      - name: Run sync
+      - name: Run API update
         run: |
           docker run --rm \
             -v "${{ github.workspace }}:/repo" \
             ghcr.io/limozacloud/nvd-sync:latest \
-            update.py --feeds /repo/_tmp/modified.json.gz /repo/_tmp/recent.json.gz \
-                      --data /repo/data --state /repo/_state.csv
+            api_update.py --hours 5 \
+                          --data /repo/data --state /repo/_state.csv
 
       - name: Commit changes
         run: |
@@ -44,5 +38,5 @@ jobs:
           git add data/ _state.csv
           git diff --cached --quiet && echo "No changes" && exit 0
           COUNT=$(git diff --cached --name-only | wc -l)
-          git commit -m "sync: update ${COUNT} CVEs ($(date -u +%Y-%m-%dT%H:%M:%SZ))"
+          git commit -m "sync(api): update ${COUNT} CVEs ($(date -u +%Y-%m-%dT%H:%M:%SZ))"
           git push
